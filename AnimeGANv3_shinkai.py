@@ -30,7 +30,12 @@ class AnimeGANv3(object) :
         self.init_G_lr = args.init_G_lr
         self.d_lr = args.d_lr
         self.g_lr = args.g_lr
+        
+        self.conditional = args.conditional
+        
+        h, w = args.img_size
 
+        # if self.conditional:
         self.img_size = args.img_size
         self.img_ch = args.img_ch
         """ Discriminator """
@@ -51,7 +56,8 @@ class AnimeGANv3(object) :
 
         self.real_generator = ImageGenerator('./dataset/train_photo', self.img_size, self.batch_size)
         self.anime_image_generator = ImageGenerator('./dataset/{}'.format(self.dataset_name + '/style'), self.img_size, self.batch_size)
-        self.anime_smooth_generator = ImageGenerator('./dataset/{}'.format(self.dataset_name + '/smooth_noise'), self.img_size, self.batch_size)
+        # self.anime_smooth_generator = ImageGenerator('./dataset/{}'.format(self.dataset_name + '/smooth_noise'), self.img_size, self.batch_size)
+        self.anime_smooth_generator = ImageGenerator('./dataset/{}'.format(self.dataset_name + '/smooth'), self.img_size, self.batch_size)
         self.dataset_num = max(self.real_generator.num_images, self.anime_image_generator.num_images)
 
         print()
@@ -226,22 +232,28 @@ class AnimeGANv3(object) :
                         }
                     )
 
-                    _, G_loss, G_support_loss, g_adv_loss, con_loss, rs_loss, sty_loss, s22, s33, s44, color_loss, tv_loss, \
-                               G_main_loss, g_m_loss, p0_loss,p4_loss,tv_loss_m = self.sess.run([self.G_optim,
-                                                                                                          self.Generator_loss,
-                                                                                                          self.G_support_loss,
-                                                                                                          self.g_adv_loss,
-                                                                                                          self.con_loss,
-                                                                                                          self.rs_loss,
-                                                                                                          self.sty_loss, self.s22, self.s33, self.s44,
-                                                                                                          self.color_loss,
-                                                                                                          self.tv_loss,
-                                                                                                          self.G_main_loss,
-                                                                                                          self.g_m_loss,
-                                                                                                          self.p0_loss,
-                                                                                                          self.p4_loss,
-                                                                                                          self.tv_loss_m
-                                                                                                          ], feed_dict = train_feed_dict)
+                    _, G_loss, G_support_loss, g_adv_loss, \
+                    con_loss, rs_loss, sty_loss, s22, s33, \
+                    s44, color_loss, tv_loss, G_main_loss, \
+                    g_m_loss, p0_loss,p4_loss,tv_loss_m = \
+                        self.sess.run([self.G_optim,
+                                    self.Generator_loss,
+                                    self.G_support_loss,
+                                    self.g_adv_loss,
+                                    self.con_loss,
+                                    self.rs_loss,
+                                    self.sty_loss, 
+                                    self.s22, 
+                                    self.s33, 
+                                    self.s44,
+                                    self.color_loss,
+                                    self.tv_loss,
+                                    self.G_main_loss,
+                                    self.g_m_loss,
+                                    self.p0_loss,
+                                    self.p4_loss,
+                                    self.tv_loss_m
+                                    ], feed_dict = train_feed_dict)
 
                     """ Update D """
                     _, D_loss, D_support_loss, D_main_loss, summary_str = self.sess.run([self.D_optim,
